@@ -1,8 +1,7 @@
 import {
-  AptosWalletErrorResult,
   NetworkName,
-  PluginProvider,
 } from "@aptos-labs/wallet-adapter-core";
+import BloctoSDK, { AptosProviderInterface as IBloctoAptos } from '@blocto/sdk';
 import type {
   AccountInfo,
   AdapterPlugin,
@@ -13,40 +12,81 @@ import type {
 } from "@aptos-labs/wallet-adapter-core";
 import { Types } from "aptos";
 
-// CHANGE AptosWindow
-interface AptosWindow extends Window {
-  aptos?: PluginProvider; // CHANGE aptos key
+interface BloctoWindow extends Window {
+  bloctoAptos?: IBloctoAptos;
 }
 
-declare const window: AptosWindow; // CHANGE AptosWindow
+declare const window: BloctoWindow;
 
-export const AptosWalletName = "Aptos" as WalletName<"Aptos">; // CHANGE AptosWalletName, CHANGE "Aptos"
+export const BloctoWalletName = "Blocto" as WalletName<"Blocto">;
 
-// CHANGE AptosWallet
-export class AptosWallet implements AdapterPlugin {
-  readonly name = AptosWalletName; // CHANGE AptosWalletName
-  readonly url = // CHANGE url value
-    "https://chrome.google.com/webstore/detail/petra-aptos-wallet/ejjladinnckdgjemekebdpeokbikhfci";
-  readonly icon = // CHANGE icon value
-    "data:image/png;base64,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";
+export interface BloctoWalletAdapterConfig {
+  network?: NetworkName.Mainnet | NetworkName.Testnet
+  bloctoAppId: string;
+}
 
-  provider: PluginProvider | undefined =
-    typeof window !== "undefined" ? window.aptos : undefined; // CHANGE window.aptos
+export const APTOS_NETWORK_CHAIN_ID_MAPPING = {
+  // MAINNET
+  [NetworkName.Mainnet]: 1,
+  // TESTNET
+  [NetworkName.Testnet]: 2
+};
+
+export class BloctoWallet implements AdapterPlugin {
+  readonly name = BloctoWalletName;
+  readonly url =
+    'https://blocto.app'
+  readonly icon =
+    'data:image/svg+xml;base64,PHN2ZyBmaWxsPSJub25lIiBoZWlnaHQ9IjI0IiB2aWV3Qm94PSIwIDAgMjQgMjQiIHdpZHRoPSIyNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGZpbGwtcnVsZT0iZXZlbm9kZCI+PHBhdGggZD0ibTE5LjQ4MzggMTUuMjQ5Yy4yNzY5IDAgLjUwNDguMjA5OS41MzI1LjQ3ODhsLjAwMjIuMDQyOS0uMDA0My4xMTQyYy0uMzM1IDMuOTgzMy0zLjc5MDQgNy4xMTUxLTguMDAzNyA3LjExNTEtNC4xNzA2IDAtNy41OTg2My0zLjA2ODctNy45OTI2OS02Ljk5NDZsLS4wMTYzOC0uMTgxMS0uMDAxMDYtLjA1MzIuMDAxNzgtLjAzOThjLjAyNTk4LS4yNzA2LjI1NDg3LS40ODIzLjUzMjg5LS40ODIzeiIgZmlsbD0iI2FmZDhmNyIvPjxwYXRoIGQ9Im00LjMwMDA5IDFjMy43ODc1NSAwIDYuODI1ODEgMi45MDkxMSA2LjgyNTgxIDYuNTAyNzd2Ni4zNTM0M2MtLjAwMDQuMjkxNy0uMjM5Mi41Mjg0LS41MzQuNTI4OGwtNi4wNTc1OC4wMDMyYy0uMjk1MTEuMDAwNy0uNTM0MzItLjIzNjEtLjUzNDMyLS41Mjc4bC4wMDAzNi0xMi41NjM3NWMwLS4xNTE0OS4xMTQyNi0uMjc2MjIuMjYxOTktLjI5NDE4eiIgZmlsbD0iIzE4MmE3MSIvPjxwYXRoIGQ9Im0xOS42OTIxIDEyLjIzODMuMDM4OC4xMjgzLS4wMjg4LS4wODQ2Yy4xNjE2LjQ1MzQuMjY2Ni43NzY5LjMxNTMgMS4zNDEzLjAzMzUuMzg3OS0uMjU3LjcyODktLjY0ODUuNzYybC0uMDMwMy4wMDIyLTMuMDgwOS4wMDA3Yy0yLjEwNjMgMC0zLjgyMDQtMS40NzQxLTMuODc1Mi0zLjU0MjNsLS4wMDE0LS4xMDIxdi0zLjQ2NThjMC0uMjAxNTMuMTY5NC0uMzY5NTkuMzc0MS0uMzYwMDcgMy4zMDAzLjE1NDY2IDUuOTk3OCAyLjM0MTUxIDYuOTM2OSA1LjMyMDM3eiIgZmlsbD0iIzM0ODVjNCIvPjwvZz48L3N2Zz4=';
+
+  provider: IBloctoAptos | undefined =
+    typeof window !== "undefined" ? window.bloctoAptos : undefined;
+
+  protected _network: NetworkName.Mainnet | NetworkName.Testnet
+
+  constructor({
+    network = NetworkName.Mainnet,
+    bloctoAppId
+  }: BloctoWalletAdapterConfig) {
+    const sdk = new BloctoSDK({
+      aptos: {
+        chainId: APTOS_NETWORK_CHAIN_ID_MAPPING[network]
+      },
+      appId: bloctoAppId
+    });
+
+    this.provider = sdk.aptos
+    this._network = network;
+  }
 
   async connect(): Promise<AccountInfo> {
     try {
       const accountInfo = await this.provider?.connect();
-      if (!accountInfo) throw `${AptosWalletName} Address Info Error`;
-      return accountInfo;
+      if (!accountInfo) throw `${BloctoWalletName} Address Info Error`;
+      if (!accountInfo.address) throw `${BloctoWalletName} address null`;
+      if (!accountInfo.publicKey) throw `${BloctoWalletName} publicKey null`;
+      if (!accountInfo.minKeysRequired) throw `${BloctoWalletName} minKeysRequired null`;
+      return {
+        address: accountInfo.address,
+        publicKey: accountInfo.publicKey,
+        minKeysRequired: accountInfo.minKeysRequired
+      };
     } catch (error: any) {
       throw error;
     }
   }
 
   async account(): Promise<AccountInfo> {
-    const response = await this.provider?.account();
-    if (!response) throw `${AptosWalletName} Account Error`;
-    return response;
+    const response = await this.provider?.publicAccount;
+    if (!response) throw `${BloctoWalletName} Account Error`;
+    if (!response.address) throw `${BloctoWalletName} address null`;
+    if (!response.publicKey) throw `${BloctoWalletName} publicKey null`;
+    if (!response.minKeysRequired) throw `${BloctoWalletName} minKeysRequired null`;
+    return {
+      address: response.address,
+      publicKey: response.publicKey,
+      minKeysRequired: response.minKeysRequired
+    };
   }
 
   async disconnect(): Promise<void> {
@@ -62,14 +102,17 @@ export class AptosWallet implements AdapterPlugin {
     options?: any
   ): Promise<{ hash: Types.HexEncodedBytes }> {
     try {
-      const response = await this.provider?.signAndSubmitTransaction(
-        transaction,
-        options
-      );
-      if ((response as AptosWalletErrorResult).code) {
-        throw new Error((response as AptosWalletErrorResult).message);
+      try {
+        const provider = this.provider;
+        const response = await provider?.signAndSubmitTransaction(transaction, options);
+        if (response) {
+          return { hash: response.hash };
+        } else {
+          throw new Error('Transaction failed');
+        }
+      } catch (error: any) {
+        throw new Error(error.message || error);
       }
-      return response as { hash: Types.HexEncodedBytes };
     } catch (error: any) {
       const errMsg = error.message;
       throw errMsg;
@@ -79,13 +122,13 @@ export class AptosWallet implements AdapterPlugin {
   async signMessage(message: SignMessagePayload): Promise<SignMessageResponse> {
     try {
       if (typeof message !== "object" || !message.nonce) {
-        `${AptosWalletName} Invalid signMessage Payload`;
+        `${BloctoWalletName} Invalid signMessage Payload`;
       }
       const response = await this.provider?.signMessage(message);
       if (response) {
         return response;
       } else {
-        throw `${AptosWalletName} Sign Message failed`;
+        throw `${BloctoWalletName} Sign Message failed`;
       }
     } catch (error: any) {
       const errMsg = error.message;
@@ -96,9 +139,10 @@ export class AptosWallet implements AdapterPlugin {
   async network(): Promise<NetworkInfo> {
     try {
       const response = await this.provider?.network();
-      if (!response) throw `${AptosWalletName} Network Error`;
+      if (!response) throw `${BloctoWalletName} Network Error`;
+      const name = response.name as unknown
       return {
-        name: response as NetworkName,
+        name: name as NetworkName,
       };
     } catch (error: any) {
       throw error;
@@ -107,16 +151,8 @@ export class AptosWallet implements AdapterPlugin {
 
   async onNetworkChange(callback: any): Promise<void> {
     try {
-      const handleNetworkChange = async (newNetwork: {
-        networkName: NetworkInfo;
-      }): Promise<void> => {
-        callback({
-          name: newNetwork.networkName,
-          chainId: undefined,
-          api: undefined,
-        });
-      };
-      await this.provider?.onNetworkChange(handleNetworkChange);
+      // not supported yet
+      return Promise.resolve();
     } catch (error: any) {
       const errMsg = error.message;
       throw errMsg;
@@ -125,23 +161,8 @@ export class AptosWallet implements AdapterPlugin {
 
   async onAccountChange(callback: any): Promise<void> {
     try {
-      const handleAccountChange = async (
-        newAccount: AccountInfo
-      ): Promise<void> => {
-        if (newAccount?.publicKey) {
-          callback({
-            publicKey: newAccount.publicKey,
-            address: newAccount.address,
-          });
-        } else {
-          const response = await this.connect();
-          callback({
-            address: response?.address,
-            publicKey: response?.publicKey,
-          });
-        }
-      };
-      await this.provider?.onAccountChange(handleAccountChange);
+      // not supported yet
+      return Promise.resolve();
     } catch (error: any) {
       console.log(error);
       const errMsg = error.message;

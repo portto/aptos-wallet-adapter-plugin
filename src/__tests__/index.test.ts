@@ -1,12 +1,11 @@
-import { AptosWallet } from "../index";
+import { BloctoWallet } from "../index";
 
 /*
 Basic tests to make sure basic variables and functions are defined on the wallet
 
-Note: change AptosWallet to match your class name
 */
-describe("AptosWallet", () => {
-  const wallet = new AptosWallet();
+describe("BloctoWallet", () => {
+  const wallet = new BloctoWallet({ bloctoAppId: "6f6b97c5-d97b-4799-8ad7-d7e8426d3369" });
 
   test("defines name", () => {
     expect(typeof wallet.name).toBe("string");
