@@ -10,6 +10,7 @@ import type {
   SignMessageResponse,
   WalletName,
 } from "@aptos-labs/wallet-adapter-core";
+import { WalletReadyState } from "@aptos-labs/wallet-adapter-core";
 import { Types } from "aptos";
 
 interface BloctoWindow extends Window {
@@ -41,6 +42,8 @@ export class BloctoWallet implements AdapterPlugin {
 
   provider: IBloctoAptos | undefined =
     typeof window !== "undefined" ? window.bloctoAptos : undefined;
+
+  readyState?: WalletReadyState = WalletReadyState.Loadable;
 
   protected _network: NetworkName.Mainnet | NetworkName.Testnet
 
