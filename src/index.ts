@@ -1,7 +1,5 @@
-import {
-  NetworkName,
-} from "@aptos-labs/wallet-adapter-core";
-import BloctoSDK, { AptosProviderInterface as IBloctoAptos } from '@blocto/sdk';
+import type { AptosProviderInterface as IBloctoAptos } from '@blocto/sdk';
+import BloctoSDK from '@blocto/sdk';
 import type {
   AccountInfo,
   AdapterPlugin,
@@ -10,8 +8,11 @@ import type {
   SignMessageResponse,
   WalletName,
 } from "@aptos-labs/wallet-adapter-core";
-import { WalletReadyState } from "@aptos-labs/wallet-adapter-core";
-import { Types } from "aptos";
+import {
+  NetworkName,
+  WalletReadyState
+} from "@aptos-labs/wallet-adapter-core";
+import type { Types } from "aptos";
 
 interface BloctoWindow extends Window {
   bloctoAptos?: IBloctoAptos;
