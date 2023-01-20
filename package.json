@@ -17,8 +17,8 @@
     "test": "jest"
   },
   "dependencies": {
-    "@aptos-labs/wallet-adapter-core": "0.2.0",
-    "@blocto/sdk": "^0.3.3",
+    "@aptos-labs/wallet-adapter-core": "^0.2.2",
+    "@blocto/sdk": "^0.3.4",
     "aptos": "^1.4.0"
   },
   "devDependencies": {
