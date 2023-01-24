@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@aptos-labs/wallet-adapter-core": "^0.2.2",
-    "@blocto/sdk": "^0.3.4",
+    "@blocto/sdk": "^0.3.5",
     "aptos": "^1.4.0"
   },
   "devDependencies": {
