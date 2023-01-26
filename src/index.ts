@@ -149,6 +149,7 @@ export class BloctoWallet implements AdapterPlugin {
       const name = response.name as unknown
       return {
         name: name as NetworkName,
+        chainId: response.chainId,
       };
     } catch (error: any) {
       throw error;
